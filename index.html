@@ -1,0 +1,447 @@
+<!doctype html>
+<html lang="ko">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="default">
+<meta name="apple-mobile-web-app-title" content="참관보고">
+<meta name="theme-color" content="#F2F2F7">
+<link rel="apple-touch-icon" href="icon.png">
+<style>:root{padding-top:env(safe-area-inset-top,0px)}body{margin:0}</style>
+<title>참관업무보고</title>
+<style>
+/* 아이폰 기본 앱(설정·미리알림) 화면 구성을 따름 */
+:root{
+  --bg:#F2F2F7; --group:#FFFFFF; --label:#000000; --secondary:#8A8A8E; --placeholder:#C4C4C7;
+  --sep:#DCDCE0; --blue:#007AFF; --red:#FF3B30; --green:#34C759; --fill:#E9E9EB;
+}
+*{box-sizing:border-box}
+[hidden]{display:none!important}
+body{
+  background:var(--bg); color:var(--label);
+  font-family:-apple-system,BlinkMacSystemFont,"Apple SD Gothic Neo","Malgun Gothic","Noto Sans KR",sans-serif;
+  font-size:17px; line-height:1.3; -webkit-font-smoothing:antialiased;
+  padding-inline:16px; padding-block:0 120px;
+}
+.wrap{max-width:560px; margin:0 auto}
+h1{font-size:32px; font-weight:700; letter-spacing:-0.02em; margin:0; padding:22px 4px 14px}
+
+.group-title{font-size:13px; color:var(--secondary); padding:0 16px 6px; margin-top:22px}
+.group-foot{font-size:13px; color:var(--secondary); padding:6px 16px 0; line-height:1.35}
+.group{background:var(--group); border-radius:10px; overflow:hidden}
+.cell{position:relative; padding:11px 16px}
+.cell + .cell::before{content:""; position:absolute; top:0; left:16px; right:0; border-top:0.5px solid var(--sep)}
+.cell.sub{padding-left:34px}
+.cell.sub + .cell::before, .cell + .cell.sub::before{left:16px}
+
+.line{display:flex; align-items:center; justify-content:space-between; gap:12px; min-height:30px}
+
+/* 회차 스테퍼 */
+.stepper{display:flex; align-items:center; gap:14px}
+.stepper output{font-size:20px; font-weight:600; min-width:44px; text-align:right; font-variant-numeric:tabular-nums}
+.stepper .seg{display:flex; background:var(--fill); border-radius:8px; overflow:hidden}
+.stepper button{
+  width:46px; height:32px; border:0; background:transparent; color:var(--label);
+  font-size:22px; line-height:1; cursor:pointer; font-family:inherit;
+}
+.stepper button + button{border-left:1px solid #D1D1D6}
+.stepper button:active{background:#D8D8DC}
+
+/* 스위치 */
+.switch{position:relative; width:51px; height:31px; flex:none}
+.switch input{position:absolute; inset:0; opacity:0; margin:0; cursor:pointer; z-index:1}
+.switch span{position:absolute; inset:0; background:var(--fill); border-radius:31px; transition:background .2s}
+.switch span::after{
+  content:""; position:absolute; top:2px; left:2px; width:27px; height:27px; border-radius:50%;
+  background:#fff; box-shadow:0 2px 6px rgba(0,0,0,.18); transition:transform .2s;
+}
+.switch input:checked + span{background:var(--green)}
+.switch input:checked + span::after{transform:translateX(20px)}
+
+/* 입력 항목 */
+.field label{display:block; font-size:15px; color:#3C3C43; margin-bottom:4px}
+.field label b{font-weight:700; color:var(--label)}
+.field label .paren{color:var(--secondary); font-size:13px}
+
+/* 작게 줄인 옵션 줄 */
+.cell.small{padding-top:7px; padding-bottom:7px}
+.cell.small .line{min-height:24px}
+.cell.small span.t{font-size:14px; color:#3C3C43}
+.switch.mini{width:40px; height:24px}
+.switch.mini span{border-radius:24px}
+.switch.mini span::after{width:20px; height:20px}
+.switch.mini input:checked + span::after{transform:translateX(16px)}
+.field input{
+  width:100%; border:0; outline:none; background:transparent; padding:0;
+  font:inherit; font-size:17px; color:var(--label); caret-color:var(--blue);
+}
+.field input::placeholder{color:var(--placeholder)}
+
+/* 지난 회차 학생 */
+.watch .name{font-size:17px}
+.watch .tag{font-size:13px; color:var(--red); margin-left:6px}
+.watch button.add{
+  border:0; background:none; color:var(--blue); font:inherit; font-size:15px; cursor:pointer; padding:4px 0;
+}
+.watch button.add.on{color:var(--secondary)}
+.watch-head{display:flex; justify-content:space-between; align-items:flex-end}
+.watch-head button{border:0; background:none; color:var(--blue); font:inherit; font-size:13px; cursor:pointer; padding:0 16px 6px}
+
+/* 미리보기 */
+details summary{list-style:none; cursor:pointer; color:var(--secondary); font-size:15px}
+details[open] summary{color:#3C3C43}
+details summary::-webkit-details-marker{display:none}
+pre{white-space:pre-wrap; word-break:keep-all; font:inherit; font-size:14px; line-height:1.5; margin:10px 0 2px; color:#3C3C43; user-select:text; -webkit-user-select:text}
+
+/* 알림창 */
+.overlay{position:fixed; inset:0; background:rgba(0,0,0,.35); z-index:20; display:flex; align-items:center; justify-content:center; padding:16px}
+.alert{width:280px; background:rgba(248,248,248,.97); border-radius:14px; text-align:center; overflow:hidden}
+.alert .msg{padding:19px 16px 16px}
+.alert h2{font-size:17px; font-weight:600; margin:0 0 6px}
+.alert p{font-size:13px; margin:0; line-height:1.45; color:var(--label)}
+.alert p b{font-size:17px; font-weight:600; display:block; margin-top:2px}
+.alert p + p{margin-top:8px}
+.alert button{
+  display:block; width:100%; height:44px; border:0; border-top:0.5px solid #C6C6C8; background:transparent;
+  color:var(--blue); font:inherit; font-size:17px; font-weight:600; cursor:pointer;
+}
+
+/* 붙여넣기 */
+.import-btn{display:block; width:100%; text-align:left; border:0; background:none; color:var(--blue); font:inherit; font-size:17px; cursor:pointer; padding:0}
+.paste{
+  position:fixed; inset:0; z-index:30; background:var(--bg);
+  display:flex; flex-direction:column; padding:0 16px calc(16px + env(safe-area-inset-bottom, 0px));
+  padding-top:env(safe-area-inset-top, 0px); overflow-y:auto;
+}
+.paste .top{display:flex; justify-content:space-between; align-items:center; height:52px; max-width:560px; width:100%; margin:0 auto}
+.paste .top b{font-size:17px; font-weight:600}
+.paste .top button{border:0; background:none; color:var(--blue); font:inherit; font-size:17px; cursor:pointer; padding:0}
+.paste .body{max-width:560px; width:100%; margin:0 auto; display:flex; flex-direction:column}
+.paste textarea{
+  width:100%; min-height:220px; border:0; border-radius:10px; background:var(--group); color:var(--label);
+  font:inherit; font-size:15px; line-height:1.45; padding:12px 14px; resize:vertical; outline:none;
+}
+.paste textarea::placeholder{color:var(--placeholder)}
+.paste .status{font-size:13px; color:var(--secondary); padding:8px 16px 0; min-height:26px}
+.paste .status.bad{color:var(--red)}
+.paste .choice{width:100%; text-align:left; border:0; background:none; font:inherit; cursor:pointer; padding:0}
+.paste .choice b{display:block; font-size:17px; font-weight:400; color:var(--blue)}
+.paste .choice small{display:block; font-size:13px; color:var(--secondary); margin-top:3px; line-height:1.35}
+.paste .choice:disabled b{color:var(--placeholder)}
+
+/* 하단 버튼 */
+.bar{
+  position:fixed; left:0; right:0; bottom:0; z-index:10;
+  padding:10px 16px calc(10px + env(safe-area-inset-bottom, 0px));
+  background:rgba(242,242,247,.92); -webkit-backdrop-filter:blur(20px); backdrop-filter:blur(20px);
+  border-top:0.5px solid #C6C6C8;
+}
+.bar .in{max-width:560px; margin:0 auto; display:grid; grid-template-columns:1fr 1.4fr; gap:10px}
+.bar button{height:50px; border:0; border-radius:12px; font:inherit; font-size:17px; font-weight:600; cursor:pointer}
+.bar .clear{background:var(--fill); color:var(--red)}
+.bar .clear.armed{background:var(--red); color:#fff}
+.bar .copy{background:var(--blue); color:#fff}
+.bar .copy.done{background:var(--green)}
+button:focus-visible{outline:2px solid var(--blue); outline-offset:2px}
+</style>
+</head>
+<body>
+
+
+<div class="wrap">
+  <h1>참관업무보고</h1>
+
+  <div class="group">
+    <div class="cell line">
+      <span>회차</span>
+      <div class="stepper">
+        <output id="roundOut">1회</output>
+        <div class="seg">
+          <button type="button" id="minus" aria-label="회차 줄이기">−</button>
+          <button type="button" id="plus" aria-label="회차 늘리기">+</button>
+        </div>
+      </div>
+    </div>
+    <div class="cell small"><div class="line">
+      <span class="t">지우면 다음 회차로</span>
+      <label class="switch mini"><input type="checkbox" id="nextRound" checked aria-label="지우면 다음 회차로"><span></span></label>
+    </div></div>
+  </div>
+  <div class="group-foot" id="dateNote"></div>
+
+  <div id="watch" hidden>
+    <div class="watch-head">
+      <div class="group-title" id="watchTitle"></div>
+      <button type="button" id="watchClose">숨기기</button>
+    </div>
+    <div class="group watch" id="watchBody"></div>
+    <div class="group-foot">또 자리에 없으면 '추가'를 눌러 2회 이상 자리비움에 넣기. 카톡 복사에는 안 들어감</div>
+  </div>
+
+  <div class="group-title">순회 기록</div>
+  <div class="group" id="form"></div>
+
+  <div class="group-title">누적</div>
+  <div class="group" id="form9"></div>
+  <div class="group-foot">이름 지우기를 눌러도 남아 있음</div>
+
+  <div class="group-title">카톡</div>
+  <div class="group">
+    <details class="cell" id="prevWrap">
+      <summary>보낼 내용 미리보기</summary>
+      <pre id="preview"></pre>
+    </details>
+    <div class="cell"><button type="button" class="import-btn" id="openPaste">이전 보고 붙여넣기</button></div>
+  </div>
+  <div class="group-foot">인수인계할 때 전 학습실장이 카톡에 올린 보고를 복사해서 넣으면 칸이 채워짐</div>
+</div>
+
+<div class="paste" id="paste" hidden>
+  <div class="top">
+    <button type="button" id="pasteCancel">취소</button>
+    <b>이전 보고 붙여넣기</b>
+    <span style="width:34px"></span>
+  </div>
+  <div class="body">
+    <textarea id="pasteText" placeholder="카톡에서 보고 메시지를 길게 눌러 복사한 뒤 여기에 붙여넣기&#10;&#10;여러 개를 붙여넣으면 맨 마지막 보고를 씀"></textarea>
+    <div class="status" id="pasteStatus"></div>
+    <div class="group-title" style="margin-top:14px">어떻게 넣을까요</div>
+    <div class="group">
+      <div class="cell"><button type="button" class="choice" id="takeNext" disabled>
+        <b id="takeNextLabel">다음 회차로 이어받기</b>
+        <small>9번 누적기록을 그대로 가져오고, 1번 자리비움 학생은 '이번 순회 때 확인' 목록에 띄움. 나머지 칸은 비움</small>
+      </button></div>
+      <div class="cell"><button type="button" class="choice" id="takeSame" disabled>
+        <b id="takeSameLabel">이 회차 그대로 불러오기</b>
+        <small>회차와 모든 칸을 붙여넣은 내용대로 채움. 고쳐서 다시 보낼 때</small>
+      </button></div>
+    </div>
+  </div>
+</div>
+
+<div class="overlay" id="overlay" hidden>
+  <div class="alert" role="alertdialog" aria-modal="true" aria-labelledby="sheetTitle">
+    <div class="msg">
+      <h2 id="sheetTitle"></h2>
+      <div id="sheetNames"></div>
+    </div>
+    <button type="button" id="sheetOk">확인</button>
+  </div>
+</div>
+
+<div class="bar">
+  <div class="in">
+    <button type="button" class="clear" id="clear">이름 지우기</button>
+    <button type="button" class="copy" id="copy">전체 복사</button>
+  </div>
+</div>
+
+<script>
+// label: 카톡에 그대로 나가는 문구 / key: 화면에서 굵게 보일 단어
+const FIELDS = [
+  {id:"f1", label:"1.자리비움 의심 학생(다음 순회 시 집중)", key:"자리비움"},
+  {id:"f1a", sub:true, label:"2회 이상 자리비움", key:"2회 이상"},
+  {id:"f2", label:"2.집중 안 하는 학생", key:"집중 안 하는"},
+  {id:"f3", label:"3.조는 학생", key:"조는"},
+  {id:"f4", label:"4.학습실에서 인강 듣는 학생", key:"인강"},
+  {id:"f4a", sub:true, label:"패드 딴짓 의심 학생", key:"패드 딴짓"},
+  {id:"f5", label:"5.학습실에서 에어팟 끼고 있는 학생", key:"에어팟"},
+  {id:"f6", label:"6.멀티실 사용 학생", key:"멀티실"},
+  {id:"f7", label:"7.주의 준 학생", key:"주의 준", def:"조는 학생들"},
+  {id:"f8", label:"8.주의 줘도 변화 없는 학생(이전 순회 시 주의 줬지만 변화 없는 학생)", key:"변화 없는"},
+  {id:"f9", label:"9.하원예정 시간보다 일찍 하원한 학생(누적기록)", key:"일찍 하원", keep:true},
+];
+function labelHTML(f){
+  let s = f.label.replace(f.key, `<b>${f.key}</b>`);
+  s = s.replace(/\(([^)]*)\)$/, '<span class="paren">($1)</span>');
+  return (f.sub ? "ㄴ " : "") + s;
+}
+const KEY = "chamgwan-report-v1";
+const $ = s => document.getElementById(s);
+let round = 1;
+
+FIELDS.forEach(f => {
+  const c = document.createElement("div");
+  c.className = "cell field" + (f.sub ? " sub" : "");
+  c.innerHTML = `<label for="${f.id}">${labelHTML(f)}</label>
+    <input type="text" id="${f.id}" autocomplete="off" autocorrect="off" autocapitalize="off" spellcheck="false" placeholder="이름">`;
+  (f.keep ? $("form9") : $("form")).appendChild(c);
+  $(f.id).value = f.def || "";
+});
+
+let carry = null; // {from, away:[], twice:[]}
+const today = () => { const d = new Date(); return `${d.getFullYear()}-${d.getMonth()+1}-${d.getDate()}`; };
+let day = today();
+function showRound(){ $("roundOut").textContent = round + "회"; }
+function showDate(){
+  const d = new Date();
+  $("dateNote").textContent = `${d.getMonth()+1}월 ${d.getDate()}일 ${"일월화수목금토"[d.getDay()]}요일 · 자정이 지나면 1회로 돌아감`;
+}
+
+function load(){
+  try{
+    const d = JSON.parse(localStorage.getItem(KEY) || "null");
+    if(!d) return;
+    if(typeof d.next === "boolean") $("nextRound").checked = d.next;
+    if(typeof d.v?.f9 === "string") $("f9").value = d.v.f9;
+    if(d.day !== today()) return; // 날짜가 바뀌면 1회부터, 9번만 유지
+    if(+d.round > 0) round = +d.round;
+    FIELDS.forEach(f => { if(typeof d.v?.[f.id] === "string") $(f.id).value = d.v[f.id]; });
+    if(d.carry) carry = d.carry;
+  }catch(e){}
+}
+function save(){
+  try{
+    const v = {}; FIELDS.forEach(f => v[f.id] = $(f.id).value);
+    localStorage.setItem(KEY, JSON.stringify({day, round, v, next:$("nextRound").checked, carry}));
+  }catch(e){}
+}
+const splitNames = s => s.split(/[,，、·\/\s]+/).map(x => x.trim()).filter(Boolean);
+const esc = s => s.replace(/[&<>"]/g, c => ({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;"}[c]));
+
+function renderWatch(){
+  const box = $("watch");
+  if(!carry || (!carry.away.length && !carry.twice.length)){ box.hidden = true; return; }
+  const inTwice = splitNames($("f1a").value);
+  const row = (n, twice) => `<div class="cell line"><span><span class="name">${esc(n)}</span>${twice ? '<span class="tag">2회 이상</span>' : ''}</span>
+    <button type="button" class="add${inTwice.includes(n) ? " on" : ""}" data-n="${esc(n)}">${inTwice.includes(n) ? "추가됨" : "추가"}</button></div>`;
+  $("watchTitle").textContent = `${carry.from}회 자리비움 · 이번 순회 때 확인`;
+  $("watchBody").innerHTML = carry.twice.map(n => row(n, true)).join("") + carry.away.map(n => row(n, false)).join("");
+  box.hidden = false;
+}
+function showSheet(){
+  const part = (t, l) => l.length ? `<p>${t}<b>${l.map(esc).join(", ")}</b></p>` : "";
+  $("sheetTitle").textContent = `${carry.from}회 자리비움 학생`;
+  $("sheetNames").innerHTML = part("2회 이상", carry.twice) + part("자리비움 의심", carry.away);
+  $("overlay").hidden = false;
+  $("sheetOk").focus();
+}
+$("sheetOk").onclick = () => { $("overlay").hidden = true; };
+$("watchClose").onclick = () => { carry = null; renderWatch(); save(); };
+$("watchBody").addEventListener("click", e => {
+  const b = e.target.closest(".add"); if(!b) return;
+  const n = b.dataset.n, el = $("f1a"); const list = splitNames(el.value);
+  const i = list.indexOf(n);
+  if(i >= 0) list.splice(i, 1); else list.push(n);
+  el.value = list.join(", ");
+  refresh();
+});
+function build(){
+  const lines = [`<참관업무보고 양식 ${round}회>`, ""];
+  FIELDS.forEach(f => lines.push(`${f.sub ? "ㄴ" : ""}${f.label} : ${$(f.id).value.trim()}`));
+  return lines.join("\n");
+}
+function refresh(){ showRound(); $("preview").textContent = build(); renderWatch(); save(); }
+
+load(); showDate(); refresh();
+
+// 페이지를 켜둔 채 자정을 넘긴 경우
+function checkNewDay(){
+  if(day === today()) return;
+  day = today(); showDate();
+  FIELDS.forEach(f => { if(!f.keep) $(f.id).value = f.def || ""; });
+  round = 1; carry = null; $("overlay").hidden = true;
+  refresh();
+}
+document.addEventListener("visibilitychange", () => { if(!document.hidden) checkNewDay(); });
+window.addEventListener("focus", checkNewDay);
+setInterval(checkNewDay, 60000);
+document.addEventListener("input", e => { if(e.target.matches(".field input")) refresh(); });
+$("nextRound").addEventListener("change", save);
+$("minus").onclick = () => { round = Math.max(1, round - 1); refresh(); };
+$("plus").onclick = () => { round += 1; refresh(); };
+
+const copyBtn = $("copy");
+copyBtn.onclick = () => {
+  const text = build();
+  const ok = () => { copyBtn.textContent = "복사됨"; copyBtn.classList.add("done");
+    setTimeout(() => { copyBtn.textContent = "전체 복사"; copyBtn.classList.remove("done"); }, 1600); };
+  const fallback = () => {
+    $("prevWrap").open = true;
+    const r = document.createRange(); r.selectNodeContents($("preview"));
+    const s = getSelection(); s.removeAllRanges(); s.addRange(r);
+    copyBtn.textContent = "길게 눌러 복사";
+  };
+  try{ navigator.clipboard.writeText(text).then(ok, fallback); }catch(e){ fallback(); }
+};
+
+const clearBtn = $("clear"); let armTimer;
+clearBtn.onclick = () => {
+  if(!clearBtn.classList.contains("armed")){
+    clearBtn.classList.add("armed"); clearBtn.textContent = "한 번 더 누르기";
+    armTimer = setTimeout(disarm, 3000); return;
+  }
+  disarm();
+  const twice = splitNames($("f1a").value);
+  const away = splitNames($("f1").value).filter(n => !twice.includes(n));
+  carry = (away.length || twice.length) ? {from: round, away, twice} : null;
+  FIELDS.forEach(f => { if(!f.keep) $(f.id).value = f.def || ""; });
+  if($("nextRound").checked) round += 1;
+  refresh();
+  window.scrollTo({top:0, behavior:"smooth"});
+  if(carry) showSheet();
+};
+// ---- 이전 보고 붙여넣기 ----
+function parseReport(raw){
+  const text = raw.replace(/\r/g, "");
+  const heads = [...text.matchAll(/참관업무보고[^\n]*?(\d+)\s*회/g)];
+  let block = text, r = null;
+  if(heads.length){ const h = heads[heads.length - 1]; r = +h[1]; block = text.slice(h.index); }
+  const v = {}; let found = 0;
+  for(const line of block.split("\n")){
+    const m = line.match(/^(.*?)[:：](.*)$/); if(!m) continue;
+    const key = m[1].trim(), val = m[2].trim();
+    let id = null;
+    if(/^ㄴ/.test(key)) id = /패드/.test(key) ? "f4a" : /자리/.test(key) ? "f1a" : null;
+    else { const n = key.match(/^(\d)\s*\./); if(n && +n[1] >= 1 && +n[1] <= 9) id = "f" + n[1]; }
+    if(id && !(id in v)){ v[id] = val; found++; }
+  }
+  return {round:r, v, found};
+}
+let parsed = null;
+function onPaste(){
+  const t = $("pasteText").value.trim();
+  const st = $("pasteStatus");
+  parsed = t ? parseReport(t) : null;
+  const ok = parsed && parsed.found > 0;
+  $("takeNext").disabled = $("takeSame").disabled = !ok;
+  st.classList.toggle("bad", !!t && !ok);
+  if(!t){ st.textContent = ""; }
+  else if(!ok){ st.textContent = "보고 양식을 못 찾았음. '1.자리비움 ... :' 같은 줄이 있는지 확인"; }
+  else{
+    const r = parsed.round;
+    st.textContent = `${r ? r + "회 보고, " : "회차 못 찾음, "}${parsed.found}개 항목 인식`;
+    $("takeNextLabel").textContent = r ? `${r + 1}회로 이어받기` : "다음 회차로 이어받기";
+    $("takeSameLabel").textContent = r ? `${r}회 그대로 불러오기` : "그대로 불러오기";
+  }
+}
+$("pasteText").addEventListener("input", onPaste);
+$("openPaste").onclick = () => { $("pasteText").value = ""; onPaste(); $("paste").hidden = false; $("pasteText").focus(); };
+$("pasteCancel").onclick = () => { $("paste").hidden = true; };
+$("takeSame").onclick = () => {
+  if(!parsed) return;
+  FIELDS.forEach(f => { $(f.id).value = parsed.v[f.id] ?? (f.def || ""); });
+  if(parsed.round) round = parsed.round;
+  carry = null;
+  $("paste").hidden = true; refresh(); window.scrollTo({top:0});
+};
+$("takeNext").onclick = () => {
+  if(!parsed) return;
+  const v = parsed.v;
+  const twice = splitNames(v.f1a || "");
+  const away = splitNames(v.f1 || "").filter(n => !twice.includes(n));
+  const from = parsed.round || round;
+  FIELDS.forEach(f => { $(f.id).value = f.keep ? (v[f.id] ?? $(f.id).value) : (f.def || ""); });
+  round = from + 1;
+  carry = (away.length || twice.length) ? {from, away, twice} : null;
+  $("paste").hidden = true; refresh(); window.scrollTo({top:0});
+  if(carry) showSheet();
+};
+
+function disarm(){ clearTimeout(armTimer); clearBtn.classList.remove("armed"); clearBtn.textContent = "이름 지우기"; }
+</script>
+
+</body>
+</html>
