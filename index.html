@@ -185,7 +185,7 @@ button:focus-visible{outline:2px solid var(--blue); outline-offset:2px}
 
   <div class="group-title">누적</div>
   <div class="group" id="form9"></div>
-  <div class="group-foot">이름 지우기를 눌러도 남아 있음</div>
+  <div class="group-foot">이름 지우기를 눌러도 남아 있고, 자정이 지나면 비워짐</div>
 
   <div class="group-title">카톡</div>
   <div class="group">
@@ -277,7 +277,7 @@ let day = today();
 function showRound(){ $("roundOut").textContent = round + "회"; }
 function showDate(){
   const d = new Date();
-  $("dateNote").textContent = `${d.getMonth()+1}월 ${d.getDate()}일 ${"일월화수목금토"[d.getDay()]}요일 · 자정이 지나면 1회로 돌아감`;
+  $("dateNote").textContent = `${d.getMonth()+1}월 ${d.getDate()}일 ${"일월화수목금토"[d.getDay()]}요일 · 자정이 지나면 1회로 돌아가고 모든 칸이 비워짐`;
 }
 
 function load(){
@@ -285,8 +285,7 @@ function load(){
     const d = JSON.parse(localStorage.getItem(KEY) || "null");
     if(!d) return;
     if(typeof d.next === "boolean") $("nextRound").checked = d.next;
-    if(typeof d.v?.f9 === "string") $("f9").value = d.v.f9;
-    if(d.day !== today()) return; // 날짜가 바뀌면 1회부터, 9번만 유지
+    if(d.day !== today()) return; // 날짜가 바뀌면 1회부터, 9번 누적기록도 비움
     if(+d.round > 0) round = +d.round;
     FIELDS.forEach(f => { if(typeof d.v?.[f.id] === "string") $(f.id).value = d.v[f.id]; });
     if(d.carry) carry = d.carry;
@@ -341,7 +340,7 @@ load(); showDate(); refresh();
 function checkNewDay(){
   if(day === today()) return;
   day = today(); showDate();
-  FIELDS.forEach(f => { if(!f.keep) $(f.id).value = f.def || ""; });
+  FIELDS.forEach(f => { $(f.id).value = f.def || ""; });
   round = 1; carry = null; $("overlay").hidden = true;
   refresh();
 }
